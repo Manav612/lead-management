@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+build/
+
+# Environment - never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+
+# Test/build artifacts (local verification only)
+.tmp-build/
+frontend/scripts/ui-shots/
+tmp-template.xlsx
+
+# Vercel
+.vercel

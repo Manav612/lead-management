@@ -1,0 +1,17 @@
+{
+  "name": "leadflow-crm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LeadFlow CRM - Lead Generation & Management System (React + Express + Supabase)",
+  "scripts": {
+    "install:all": "npm install && npm --prefix api install && npm --prefix frontend install",
+    "dev": "concurrently -n api,web -c blue,green \"npm --prefix api run dev\" \"npm --prefix frontend run dev\"",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix api test && npm --prefix frontend test",
+    "start:api": "npm --prefix api start",
+    "first-admin": "node scripts/create-first-admin.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

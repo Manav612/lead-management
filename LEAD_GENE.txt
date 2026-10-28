@@ -1,0 +1,1099 @@
+# MASTER PROJECT PROMPT — LEAD GENERATION & MANAGEMENT SYSTEM
+
+## 1. Your Role
+
+Act as a senior full-stack software engineer, database architect, UI/UX designer, security engineer, and QA engineer.
+
+Build a complete, professional, production-minded **Lead Generation & Management System** from scratch.
+
+Do not just provide instructions, code snippets, mockups, or sample components. Create the complete working project in the current workspace, install dependencies, configure the application, run it locally, test it, fix errors, and prepare it for deployment.
+
+I am a beginner, so keep the setup understandable and provide simple instructions for any manual configuration I must perform.
+
+**Important execution rule:** Work directly in the available terminal and workspace. If a command fails, investigate and fix the problem. Do not stop after creating the frontend. Continue until the full application is implemented and the local verification process is complete, subject to available credentials and tools.
+
+Do not claim that the app is working unless you have actually run and tested it.
+
+---
+
+## 2. Project Overview
+
+Project name: LeadFlow CRM
+
+Build a web-based lead generation and management application for a company that imports leads from Excel or CSV files, assigns leads to employees, tracks customer interactions, schedules follow-ups, manages reminders, and monitors sales performance.
+
+The application must contain two panels in the SAME project:
+
+1. Admin Panel
+2. User Panel
+
+Both panels must share the same database, authentication system, backend, and design system.
+
+The application must be responsive and work on desktop, tablet, and mobile.
+
+---
+
+## 3. Mandatory Technology Stack
+
+Use the following stack:
+
+### Frontend
+- React
+- Vite
+- JavaScript
+- React Router
+- Material UI (MUI)
+- MUI Icons
+- Axios or a clean fetch-based API client
+- React Hook Form where appropriate
+- Zod for validation where appropriate
+- Recharts for charts
+- Day.js for date handling
+
+Do not use Next.js or TypeScript for this project. Use React with JavaScript.
+
+### Backend
+- Node.js
+- Express
+- JavaScript
+- REST API architecture
+- Zod for request validation
+- Secure authentication middleware
+- Centralized error handling
+- Environment-based configuration
+
+### Database and Authentication
+- Supabase PostgreSQL
+- Supabase Auth
+- Supabase Row Level Security (RLS)
+- Official Supabase JavaScript client
+
+### Deployment
+- GitHub for source control
+- Vercel for the frontend and Node.js API/serverless functions
+- Supabase for the database and authentication
+
+Use versions compatible with the installed Node.js environment. Prefer current stable, mutually compatible packages.
+
+The application must support two configurations:
+
+1. Local development
+2. Production deployment on Vercel
+
+Use a deployment structure that Vercel actually supports. Do not assume a permanent Express server can run inside a serverless function.
+
+A suitable structure is a Vite frontend with Express API routes exposed through Vercel Functions, while keeping shared backend logic reusable.
+
+If needed, use a separate local Express development server and a Vite development proxy. Production must not require a separate always-running server.
+
+---
+
+## 4. Design Requirements
+
+Create a clean, modern, professional SaaS dashboard.
+
+Design inspiration: a polished CRM dashboard with a sidebar, top navigation bar, summary cards, data tables, filters, charts, and clean forms.
+
+### Visual design
+- Primary color: professional blue
+- Neutral white/light-grey backgrounds
+- Subtle borders and shadows
+- Rounded cards
+- Consistent spacing and typography
+- Clear status chips
+- Clean tables with pagination
+- Good empty states
+- Loading indicators and skeletons
+- Confirmation dialogs for destructive actions
+- Toast notifications for success and errors
+- Helpful form validation messages
+- Responsive sidebar
+- Accessible buttons, labels, and contrast
+- Optional dark mode if time permits
+
+Do not create a plain, unstyled CRUD application.
+
+Use reusable components and a consistent theme.
+
+### Main layout
+- Left sidebar
+- Top header
+- Page title and breadcrumbs where appropriate
+- Main content area
+- Notification icon
+- Current-user menu
+- Logout action
+
+Keep the Admin Panel and User Panel visually consistent but permission-aware.
+
+---
+
+## 5. Authentication and Authorization
+
+Implement a real authentication system using Supabase Auth.
+
+Required features:
+- Login with email and password
+- Logout
+- Forgot password
+- Password reset
+- Persistent authenticated session
+- Protected routes
+- Loading state while restoring the session
+- Friendly authentication error messages
+- Admin and User roles
+- Account active/inactive status
+
+### Admin role
+The administrator can:
+- View all leads
+- View all users
+- Create and deactivate users
+- Assign and reassign leads
+- Import leads
+- View all reminders and activities
+- View all reports
+- Configure allowed lead sources, statuses, and priorities
+
+### User role
+An employee can:
+- View leads assigned to them
+- View their dashboard
+- Update permitted lead fields
+- Add remarks and activities
+- Schedule follow-ups
+- Complete or reschedule follow-ups
+- View their own tasks and reminders
+- View permitted lead history
+
+Users must not be able to grant themselves the Admin role.
+
+### Security requirements
+- Store passwords only through Supabase Auth.
+- Never store plain-text passwords.
+- Never expose a Supabase service-role or secret key in frontend code.
+- Use the Supabase publishable/anon key only where appropriate.
+- Store privileged keys in server-side environment variables.
+- Verify authentication on protected backend endpoints.
+- Verify roles and lead ownership on the server.
+- Use RLS policies for database access.
+- Do not rely on hiding frontend buttons as authorization.
+- Prevent users from changing protected fields or accessing other employees' private leads through direct API calls.
+- Validate every important request on the backend.
+- Never commit `.env` files or secrets to Git.
+- Add appropriate security headers and rate limits to sensitive authentication-related API routes.
+- Configure CORS appropriately for local development and the production domain.
+
+Create a safe initial-admin bootstrap mechanism. It must not allow an unauthenticated public request to create an administrator. Explain the one-time setup required to create the first admin.
+
+For production, use trusted role information managed through server-controlled configuration or database permissions. Do not trust a client-submitted `role` field.
+
+---
+
+## 6. Database Schema
+
+Create SQL migration files in the project repository.
+
+The schema must be designed for Supabase PostgreSQL.
+
+Create the following tables.
+
+### A. profiles
+Fields:
+- id: UUID, primary key, linked to `auth.users.id`
+- full_name
+- email
+- role: admin or user
+- is_active
+- created_at
+- updated_at
+
+The role must be controlled by trusted administrative operations.
+
+### B. leads
+Fields:
+- id: UUID, primary key
+- lead_code: unique human-readable lead identifier
+- name: required
+- company_name
+- phone: required
+- email
+- city
+- lead_source
+- interested_product_or_service
+- estimated_deal_value: numeric
+- priority: high, medium, low
+- status: new, contacted, qualified, follow_up, proposal_sent, won, lost, on_hold
+- assigned_to: nullable UUID referencing profiles
+- general_remarks: optional
+- import_batch_id: nullable UUID
+- created_by
+- created_at
+- updated_at
+- next_follow_up_at: optional if useful as a cached/display field
+
+Generate lead codes safely. Do not rely on client-generated sequential IDs.
+
+### C. activities
+Fields:
+- id: UUID, primary key
+- lead_id
+- user_id
+- activity_type: call, email, meeting, whatsapp, note, status_change, other
+- subject
+- remarks
+- outcome
+- created_at
+
+Activities must preserve historical records. Adding a new remark must not overwrite previous remarks.
+
+### D. follow_ups
+Fields:
+- id: UUID, primary key
+- lead_id
+- assigned_to
+- created_by
+- title
+- description
+- follow_up_type: call, email, meeting, whatsapp, other
+- due_at: timestamp with time zone
+- reminder_at: nullable timestamp with time zone
+- status: pending, completed, cancelled
+- outcome
+- completed_at
+- created_at
+- updated_at
+
+Store timestamps consistently and display them in the user's configured timezone, defaulting to Asia/Kolkata for this application.
+
+### E. notifications
+Fields:
+- id: UUID, primary key
+- user_id
+- lead_id: nullable
+- follow_up_id: nullable
+- title
+- message
+- notification_type
+- is_read
+- created_at
+
+### F. lead_status_history
+Fields:
+- id: UUID, primary key
+- lead_id
+- old_status
+- new_status
+- changed_by
+- reason
+- created_at
+
+### G. import_batches
+Fields:
+- id: UUID, primary key
+- original_filename
+- uploaded_by
+- total_rows
+- valid_rows
+- invalid_rows
+- duplicate_rows
+- imported_rows
+- import_status
+- created_at
+- completed_at
+
+### H. import_errors
+Fields:
+- id: UUID, primary key
+- import_batch_id
+- row_number
+- raw_row_data: JSONB
+- error_messages: JSONB or a suitable structured field
+- created_at
+
+### Database requirements
+- Foreign key constraints
+- Unique constraints where appropriate
+- Useful indexes for status, assigned user, phone, email, and follow-up due dates
+- Correct `ON DELETE` behavior
+- `created_at` and `updated_at` management
+- Transactions or an equivalent safe import strategy
+- RLS policies for all tables
+- No unauthorized direct access to protected records
+- Seed data must be optional and safe for local testing
+
+Add database migration and seed instructions to the README.
+
+Do not run destructive database resets against an existing Supabase project without explicit approval.
+
+---
+
+## 7. Excel/CSV Import — Most Important Feature
+
+The application must support importing leads from `.xlsx` and `.csv` files using one fixed, downloadable template.
+
+Only administrators can upload or import lead files.
+
+### Template columns
+
+Use these exact column headers:
+
+1. Lead Name
+2. Company Name
+3. Phone Number
+4. Email
+5. City
+6. Lead Source
+7. Interested Product/Service
+8. Estimated Deal Value
+9. Priority
+10. Remarks
+
+Generate the template through a backend endpoint or a frontend utility and make it downloadable.
+
+Provide:
+- Excel template
+- CSV template
+- Example row
+- Clear instructions for filling the template
+
+Do not require the user to manually enter lead IDs, status, creation timestamps, or assigned user IDs in the uploaded file.
+
+### Import workflow
+
+Step 1: Download the template.
+
+Step 2: Complete the template in Excel or another spreadsheet application.
+
+Step 3: Upload the file.
+
+Step 4: Validate the file on the server.
+
+Step 5: Preview the results before importing.
+
+Step 6: Show a clear summary:
+- Total rows
+- Valid rows
+- Invalid rows
+- Potential duplicates
+
+Step 7: Display a preview table with row number, lead name, phone, email, validation status, and error reason.
+
+Step 8: Allow the admin to download a detailed error report.
+
+Step 9: Allow the admin to confirm importing valid rows.
+
+Step 10: Save the imported leads and import batch history.
+
+Step 11: Display the final import result.
+
+### Validation rules
+- Required columns must exist.
+- Missing required values must be flagged.
+- Validate phone and email formats reasonably.
+- Validate estimated deal values as non-negative numbers.
+- Normalize priority values.
+- Trim unnecessary spaces.
+- Handle empty optional fields.
+- Handle malformed CSV files.
+- Handle missing or renamed column headers.
+- Prevent spreadsheet formulas from being treated as trusted values.
+- Enforce a configurable upload size and row limit.
+- Never execute uploaded spreadsheet formulas.
+
+### Duplicate detection
+Detect likely duplicates using normalized phone number and email where available.
+
+Do not automatically overwrite an existing lead.
+
+Show potential duplicates and allow the administrator to skip them or explicitly confirm importing when appropriate.
+
+Avoid duplicate creation within the same upload batch.
+
+### Import reliability
+- Do not write records to the live leads table before validation and confirmation.
+- Save import results and error information.
+- Avoid partial or inconsistent imports.
+- Use safe batching or database transactions.
+- Keep a clear import status.
+- Prevent double-submission from creating duplicate records.
+- Handle large files within configured limits.
+
+The import page should look polished and easy to use.
+
+---
+
+## 8. Lead Management
+
+Create a complete Leads module.
+
+### Lead listing
+Show:
+- Lead code
+- Name
+- Company
+- Phone
+- Source
+- Status
+- Priority
+- Assigned employee
+- Next follow-up
+- Created date
+- Actions
+
+Required functionality:
+- Search
+- Pagination
+- Sorting
+- Filter by status
+- Filter by priority
+- Filter by source
+- Filter by employee for admins
+- Filter by follow-up date
+- Clear filters
+- Add lead manually
+- View lead
+- Edit lead
+- Archive or delete only according to an explicitly defined safe policy
+- Export filtered results to CSV
+- Bulk assign leads for admins
+
+Use server-side pagination and filtering for scalability.
+
+### Lead creation and editing
+Use a professional form with proper validation.
+
+Generate the lead code on the server.
+
+Record who created and updated the lead.
+
+Prevent unauthorized users from changing ownership or privileged fields.
+
+---
+
+## 9. Lead Details Page
+
+Create a dedicated page for each lead.
+
+Display:
+- Contact information
+- Company details
+- Lead source
+- Interested product/service
+- Estimated value
+- Priority
+- Current status
+- Assigned employee
+- Created date
+- Next follow-up
+- Previous follow-ups
+- Activity timeline
+- Remarks
+- Status change history
+
+Provide clear actions:
+- Edit lead
+- Add remark
+- Record a call
+- Schedule follow-up
+- Change status
+- Complete a follow-up
+- Reschedule follow-up
+
+Show the timeline in chronological order.
+
+Never overwrite the previous activity when a new remark is added.
+
+---
+
+## 10. Lead Status Management
+
+Use these statuses:
+- New
+- Contacted
+- Qualified
+- Follow-up
+- Proposal Sent
+- Won
+- Lost
+- On Hold
+
+Display them as consistent, color-coded chips.
+
+When a lead status changes:
+- Save the new status.
+- Record the old and new statuses.
+- Record who changed the status.
+- Record the change timestamp.
+- Add a status-change activity if appropriate.
+
+When marking a lead as Lost, request a loss reason.
+
+When marking a lead as Won, preserve the estimated deal value and activity history.
+
+Do not delete history when a lead changes status.
+
+---
+
+## 11. Follow-up and Reminder System
+
+Build a complete follow-up module.
+
+### Follow-up creation
+Allow users to:
+- Select a lead
+- Add a title
+- Add a description
+- Choose the task type
+- Select the responsible employee where authorized
+- Choose due date and time
+- Choose a reminder time
+- Save the task
+
+### Follow-up dashboard
+Provide tabs or filters for:
+- Due today
+- Upcoming
+- Overdue
+- Completed
+- Cancelled
+
+### Follow-up actions
+- Mark complete
+- Add outcome
+- Reschedule
+- Cancel
+- Open associated lead
+- View follow-up history
+
+When completing a follow-up, offer an option to schedule the next follow-up.
+
+### Reminders
+For the initial version:
+- Show due and overdue reminders inside the application.
+- Display notification counts.
+- Provide a notification center.
+- Refresh or update reminders without requiring the user to manually reload the entire app.
+- Avoid generating duplicate notifications for the same reminder event.
+
+Use server-side scheduling or a supported scheduled-job mechanism for time-triggered notifications.
+
+Do not depend on a browser tab remaining open for reminders to work.
+
+If scheduled execution is not configured locally or on Vercel, explain the limitation and implement reliable due-task queries as the baseline.
+
+Email and WhatsApp delivery are optional future integrations. Do not pretend that messages have been sent unless the integration is actually configured.
+
+---
+
+## 12. Admin Dashboard
+
+Build a complete admin dashboard with:
+- Total leads
+- New leads
+- Active leads
+- Qualified leads
+- Follow-ups due today
+- Overdue follow-ups
+- Won leads
+- Lost leads
+- Estimated pipeline value
+- Conversion rate
+- Recent activities
+- Recent imports
+- Employee-wise lead distribution
+- Lead-source breakdown
+- Leads by status
+
+Include:
+- Date range filters
+- Charts
+- Recent lead table
+- Overdue follow-up list
+- Quick actions
+- Loading, empty, and error states
+
+All counts and charts must be calculated from real database data, not hardcoded demo numbers.
+
+---
+
+## 13. User Dashboard
+
+Each user should see only data permitted for their role.
+
+Display:
+- My assigned leads
+- New assigned leads
+- Leads by status
+- Follow-ups due today
+- Upcoming follow-ups
+- Overdue follow-ups
+- Recently updated leads
+- Completed tasks
+- Won and lost leads where applicable
+
+Quick actions:
+- Open lead
+- Add remark
+- Update status
+- Schedule follow-up
+- Complete follow-up
+
+Use database-backed data.
+
+---
+
+## 14. User Management
+
+Admin-only module.
+
+Features:
+- List users
+- Create user accounts using a secure administrative flow
+- Assign roles
+- Edit profile details
+- Activate or deactivate users
+- View employee lead counts
+- Assign leads
+- Reassign leads
+- Prevent accidental deletion of users who have associated records
+
+Do not implement public registration by default.
+
+For initial setup, document how the first administrator is created securely.
+
+If email confirmation is enabled, handle it correctly.
+
+Never expose administrative service credentials in the browser.
+
+---
+
+## 15. Search, Filters, and Reports
+
+### Search
+Support searches by:
+- Lead name
+- Company name
+- Phone number
+- Email
+- Lead code
+
+### Filters
+Support:
+- Status
+- Priority
+- Lead source
+- Assigned employee
+- Creation date range
+- Follow-up date range
+- Won/Lost outcome
+
+### Reports
+Create reports for:
+- Leads by source
+- Leads by status
+- Leads created over time
+- Won versus Lost
+- Conversion rate
+- Employee-wise performance
+- Overdue follow-ups
+- Lost lead reasons
+- Expected deal value
+
+Add date filters and CSV export where appropriate.
+
+Define the conversion-rate formula explicitly and avoid division-by-zero errors.
+
+---
+
+## 16. Application Pages
+
+Create the following routes.
+
+Public/authentication:
+- `/login`
+- `/forgot-password`
+- `/reset-password`
+
+Admin:
+- `/admin/dashboard`
+- `/admin/leads`
+- `/admin/leads/new`
+- `/admin/leads/:id`
+- `/admin/import`
+- `/admin/import/history`
+- `/admin/follow-ups`
+- `/admin/calendar`
+- `/admin/reports`
+- `/admin/users`
+- `/admin/settings`
+
+User:
+- `/app/dashboard`
+- `/app/leads`
+- `/app/leads/:id`
+- `/app/follow-ups`
+- `/app/calendar`
+- `/app/notifications`
+- `/app/profile`
+
+Use protected routing.
+
+Redirect users to the correct panel after login.
+
+Prevent users from accessing admin routes or APIs.
+
+Add a professional 404 page.
+
+---
+
+## 17. API Architecture
+
+Create clean REST APIs with consistent response formats.
+
+Possible endpoint structure:
+
+Authentication/session:
+- `GET /api/health`
+- `GET /api/me`
+
+Leads:
+- `GET /api/leads`
+- `POST /api/leads`
+- `GET /api/leads/:id`
+- `PATCH /api/leads/:id`
+- `POST /api/leads/bulk-assign`
+- `GET /api/leads/export`
+
+Imports:
+- `GET /api/imports/template`
+- `POST /api/imports/validate`
+- `POST /api/imports/confirm`
+- `GET /api/imports`
+- `GET /api/imports/:id`
+- `GET /api/imports/:id/errors`
+
+Activities:
+- `GET /api/leads/:id/activities`
+- `POST /api/leads/:id/activities`
+
+Follow-ups:
+- `GET /api/follow-ups`
+- `POST /api/follow-ups`
+- `PATCH /api/follow-ups/:id`
+- `POST /api/follow-ups/:id/complete`
+
+Users:
+- `GET /api/users`
+- `POST /api/users`
+- `PATCH /api/users/:id`
+
+Notifications:
+- `GET /api/notifications`
+- `PATCH /api/notifications/:id/read`
+
+Reports:
+- `GET /api/reports/summary`
+- `GET /api/reports/leads-by-status`
+- `GET /api/reports/leads-by-source`
+- `GET /api/reports/performance`
+
+You may adjust endpoint names where needed.
+
+All endpoints must:
+- Validate input
+- Authenticate requests where required
+- Enforce role permissions
+- Return appropriate HTTP status codes
+- Handle errors consistently
+- Avoid leaking internal secrets or sensitive information
+
+Do not trust user IDs or roles supplied by the frontend.
+
+---
+
+## 18. Project Folder Structure
+
+Create a maintainable project structure similar to:
+
+leadflow-crm/
+  frontend/
+    src/
+      components/
+      layouts/
+      pages/
+        auth/
+        admin/
+        user/
+      features/
+        leads/
+        imports/
+        followups/
+        activities/
+        notifications/
+        reports/
+        users/
+      hooks/
+      services/
+      utils/
+      theme/
+      App.jsx
+      main.jsx
+    public/
+    package.json
+    vite.config.js
+
+  api/
+    index.js
+    routes/
+    controllers/
+    services/
+    middleware/
+    validators/
+    utils/
+    package.json
+
+  supabase/
+    migrations/
+    seed.sql
+
+  scripts/
+  tests/
+  .env.example
+  .gitignore
+  package.json
+  vercel.json
+  README.md
+
+You may adjust the structure to ensure the deployment works correctly.
+
+Use reusable components, avoid giant components, and keep business logic separate from UI logic.
+
+---
+
+## 19. Local Development Requirements
+
+The application must run on my local computer.
+
+Use a convenient development setup, preferably:
+
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:3001` or a clearly documented alternative
+
+Use a Vite proxy or an equivalent configuration to avoid unnecessary CORS problems during local development.
+
+Create root-level scripts so I can run the full application with a simple command such as:
+
+`npm run dev`
+
+Also provide:
+- `npm run build`
+- `npm run test`
+- `npm run lint` if linting is configured
+
+Install all necessary dependencies.
+
+Check the installed Node.js version and choose compatible package versions.
+
+Create `.env.example`.
+
+Never put real secrets in `.env.example`.
+
+If actual Supabase credentials are not available, do not invent them. Create a clearly documented setup process and a safe local development mode for testing the interface.
+
+Prefer a real Supabase integration for production and integration testing.
+
+If a local mock mode is necessary, make it explicit, isolated, and safe. Never silently use mock data when the application claims to be connected to production.
+
+---
+
+## 20. Environment Variables
+
+Document the required configuration.
+
+Frontend variables may include:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `VITE_API_BASE_URL` if necessary
+
+Server-side variables may include:
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY` or the appropriate privileged server credential supported by the chosen Supabase client version
+- `SUPABASE_PUBLISHABLE_KEY` if required for the server implementation
+- `APP_BASE_URL`
+- `CORS_ORIGINS`
+- `NODE_ENV`
+
+Use the least-privileged credentials possible.
+
+Do not expose server-side variables using the Vite `VITE_` prefix.
+
+Document which variables are needed locally and which must be configured in Vercel.
+
+---
+
+## 21. Testing and Quality Assurance
+
+Do not stop when the application compiles.
+
+Create meaningful tests for:
+- Input validation
+- Authentication middleware
+- Admin/user authorization
+- Lead creation and editing
+- Import template headers
+- CSV/XLSX parsing
+- Invalid rows
+- Duplicate detection
+- Import confirmation
+- Follow-up creation and completion
+- Status changes
+- Dashboard calculations
+- Unauthorized API access
+
+Run the tests and production build.
+
+Fix any errors discovered.
+
+Where credentials are available, test against a dedicated development Supabase project.
+
+Never run destructive tests against production data.
+
+If browser automation tools are available, test:
+1. Login page loads.
+2. Login works.
+3. Correct role-based redirect works.
+4. Admin can access import functionality.
+5. User cannot access admin functionality.
+6. Lead list loads.
+7. Search and filters work.
+8. Lead details and remarks work.
+9. Follow-up scheduling works.
+10. Import preview and validation work.
+11. Production build succeeds.
+
+Do not claim that a test passed unless it was executed.
+
+---
+
+## 22. Documentation
+
+Create a complete README.md for a beginner.
+
+Include:
+- Project overview
+- Technology stack
+- Prerequisites
+- Installation instructions
+- Folder structure
+- Supabase account and project setup
+- How to configure environment variables
+- How to run database migrations
+- How to create the first administrator securely
+- How to run the app locally
+- How to import leads
+- How to run tests
+- How to build for production
+- How to deploy to GitHub and Vercel
+- Vercel environment variable configuration
+- Supabase authentication redirect URL configuration
+- RLS and security notes
+- Known limitations and optional integrations
+
+Explain every manual step clearly.
+
+---
+
+## 23. Deployment Requirements
+
+Prepare the project for deployment to Vercel.
+
+Ensure:
+- Frontend routes work after refreshing the page.
+- API routes use a deployment-compatible structure.
+- Environment variables are documented.
+- No localhost URL is hardcoded into production builds.
+- Supabase authentication redirect URLs are configurable.
+- Database migrations are included in the repository.
+- Secrets are not committed.
+- Production build completes.
+- CORS and cookie/session behavior are appropriate for the selected authentication design.
+- No permanent background process is assumed.
+
+Do not deploy to an external account, create paid resources, or modify an existing production database without my explicit approval.
+
+Prepare everything required for me to deploy it.
+
+---
+
+## 24. Acceptance Criteria
+
+The project is complete only when:
+
+1. The complete source code exists in the workspace.
+2. Dependencies are installed.
+3. The application can run locally using documented commands.
+4. The frontend builds successfully.
+5. The backend API runs in development.
+6. Supabase integration is implemented.
+7. Authentication and role-based authorization are implemented.
+8. Admin and User panels are implemented.
+9. Excel/CSV templates can be downloaded.
+10. File upload, validation, preview, duplicate detection, and confirmed import are implemented.
+11. Leads can be created, viewed, searched, filtered, edited, and assigned.
+12. Remarks and activity history work.
+13. Follow-ups can be scheduled, completed, and rescheduled.
+14. Dashboard data comes from real database queries when connected.
+15. The code includes database migrations and RLS policies.
+16. Tests and build commands have been executed and their actual results documented.
+17. Deployment configuration is prepared.
+18. README instructions are complete.
+19. No critical errors discovered during verification remain unresolved.
+
+If an external service requires credentials that I have not provided, finish the implementation and explain precisely which configuration steps remain. Do not invent credentials or claim that a live integration has been verified.
+
+---
+
+## 25. Final Execution Instructions
+
+Start by inspecting the current workspace and available Node.js/npm versions.
+
+Then proceed in this order:
+
+1. Create the project structure.
+2. Set up the React frontend and Express backend.
+3. Configure Supabase integration.
+4. Create SQL migrations and RLS policies.
+5. Implement authentication and authorization.
+6. Implement the Admin Panel.
+7. Implement the User Panel.
+8. Implement lead management.
+9. Implement Excel/CSV template generation and import workflow.
+10. Implement remarks and activity history.
+11. Implement follow-ups and reminders.
+12. Implement reports and user management.
+13. Add tests and documentation.
+14. Install dependencies.
+15. Run the app locally.
+16. Execute tests and the production build.
+17. Fix discovered errors.
+18. Verify the final state.
+
+Do not merely explain how to do these tasks. Perform the implementation in the available workspace.
+
+Do not stop after the first phase unless a genuine blocker requires my input.
+
+If a credential, account authorization, or external configuration is required, continue with everything that can be implemented safely and ask me only for the exact missing information when necessary.
+
+At the end, provide a concise report with:
+- Features completed
+- Important files created
+- Database setup status
+- Test results
+- Build results
+- Exact command to start the application
+- Localhost URL
+- Any remaining manual configuration
+- Step-by-step Vercel deployment instructions
+
+**Begin implementing the complete application now.**

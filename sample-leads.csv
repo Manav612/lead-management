@@ -1,0 +1,13 @@
+Lead Name,Company Name,Phone Number,Email,City,Lead Source,Interested Product/Service,Estimated Deal Value,Priority,Remarks
+Rohit Sharma,Sharma Traders,+91 98123 45670,rohit@sharmatraders.in,Mumbai,Website,Annual Plan,150000,high,Met at trade expo
+Sunita Patel,Patel Textiles,+91 98220 11223,sunita@pateltextiles.in,Ahmedabad,Referral,Pro,250000,high,Referred by existing client
+Vikram Rao,Rao Logistics,+91 99870 55667,vikram@raologistics.in,Bengaluru,Cold Call,Starter,50000,low,Second call scheduled
+Meena Iyer,Iyer Foods,+91 98450 22334,meena@iyerfoods.in,Chennai,Social Media,Pro,180000,medium,Inquired via Instagram ad
+Arif Khan,Khan Electronics,+91 99010 33445,arif@khanelectronics.in,Hyderabad,Event,Annual Plan,320000,high,Booth visitor at TechShow
+Deepa Nair,Nair Consulting,+91 98730 66778,deepa@nairconsulting.in,Kochi,Website,Starter,45000,low,Requested a demo
+Rajesh Gupta,Gupta Motors,+91 98990 77889,rajesh@guptamotors.in,Pune,Advertisement,Pro,200000,medium,Responded to Google ad
+Anjali Verma,Verma Healthcare,+91 98110 88990,anjali@vermahealth.in,Jaipur,Referral,Annual Plan,450000,high,Hospital chain expansion
+Karan Mehta,Mehta Retail,+91 98330 99001,karan@mehtaretail.in,Indore,Website,Starter,60000,medium,
+Farida Sheikh,Sheikh Interiors,+91 99220 10112,farida@sheikhinteriors.in,Surat,Social Media,Pro,120000,low,Follow up next week
+Sameer Joshi,Joshi Analytics,+91 98670 12134,sameer@joshianalytics.in,Nagpur,Cold Call,Annual Plan,280000,high,Duplicate test row A
+Sameer Joshi,Joshi Analytics,+91 98670 12134,sameer@joshianalytics.in,Nagpur,Cold Call,Annual Plan,280000,high,Duplicate test row B (same phone as above)
