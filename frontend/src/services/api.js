@@ -24,12 +24,20 @@ async function request(path, { method = 'GET', body, formData, headers = {}, raw
     body: formData ? formData : body !== undefined ? JSON.stringify(body) : undefined
   })
   if (raw) return res
-  if (res.status === 401 && !path.startsWith('/api/auth/')) {
+  // /api/me is a session probe — its 401 is expected on the login page and is
+  // handled by AuthContext.fetchMe; don't bounce navigation for it.
+  if (res.status === 401 && !path.startsWith('/api/auth/') && path !== '/api/me') {
     setToken(null)
     window.dispatchEvent(new Event('leadflow:unauthorized'))
   }
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new ApiError(data.error || `Request failed (${res.status})`, res.status, data.details)
+  if (!res.ok) {
+    let message = data.error || `Request failed (${res.status})`
+    if (Array.isArray(data.details) && data.details.length) {
+      message = `${message} — ${data.details.join('; ')}`
+    }
+    throw new ApiError(message, res.status, data.details)
+  }
   return data
 }
 

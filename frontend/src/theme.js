@@ -6,6 +6,7 @@ export const STATUS_META = {
   qualified: { label: 'Qualified', color: 'primary' },
   follow_up: { label: 'Follow-up', color: 'warning' },
   proposal_sent: { label: 'Proposal Sent', color: 'secondary' },
+  pending_doc: { label: 'Pending for Doc', color: 'info' },
   won: { label: 'Won', color: 'success' },
   lost: { label: 'Lost', color: 'error' },
   on_hold: { label: 'On Hold', color: 'default' }

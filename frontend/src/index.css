@@ -1,0 +1,8 @@
+/*
+ * datetime-local fields: while a field is empty and not focused, the browser
+ * paints its native "dd/mm/yyyy hh:mm" hint, which collides with the MUI
+ * floating label. Hide the native hint in that state so only the label shows.
+ */
+input[type='datetime-local']:not(:focus):invalid::-webkit-datetime-edit {
+  color: transparent;
+}

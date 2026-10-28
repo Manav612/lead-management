@@ -75,7 +75,7 @@ create table if not exists public.leads (
   estimated_deal_value          numeric(14,2) check (estimated_deal_value >= 0),
   priority                      text not null default 'medium' check (priority in ('high','medium','low')),
   status                        text not null default 'new'
-                                check (status in ('new','contacted','qualified','follow_up','proposal_sent','won','lost','on_hold')),
+                                check (status in ('new','contacted','qualified','follow_up','proposal_sent','pending_doc','won','lost','on_hold')),
   assigned_to                   uuid references public.profiles(id) on delete set null,
   general_remarks               text,
   import_batch_id               uuid,

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { Spinner } from './components/ui'
 import Layout from './components/Layout'
+import ErrorBoundary from './components/ErrorBoundary'
 import { LoginPage, ForgotPasswordPage, ResetPasswordPage } from './pages/auth'
 import {
   AdminDashboard, AdminLeads, AdminLeadNew, AdminLeadDetail, ImportPage,
@@ -35,6 +36,7 @@ function RoleRoute({ admin, children }) {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -74,6 +76,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </ErrorBoundary>
   )
 }
 

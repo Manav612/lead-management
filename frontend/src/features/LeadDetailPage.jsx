@@ -38,6 +38,18 @@ import EditIcon from '@mui/icons-material/Edit'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import CloseIcon from '@mui/icons-material/Close'
+
+function DialogCloseTitle({ title, onClose }) {
+  return (
+    <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+      <span>{title}</span>
+      <IconButton size="small" aria-label="Close" onClick={onClose} sx={{ color: 'text.secondary' }}>
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </DialogTitle>
+  )
+}
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
@@ -93,8 +105,8 @@ export default function LeadDetailPage({ isAdmin = false }) {
   const [reschedule, setReschedule] = useState(null)
   const [busy, setBusy] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(null)
     try {
       const [l, a, fu, h] = await Promise.all([
@@ -122,9 +134,9 @@ export default function LeadDetailPage({ isAdmin = false }) {
     }
   }, [isAdmin])
 
-  const guard = (fn) => async () => {
+  const guard = (fn) => async (...args) => {
     setBusy(true)
-    try { await fn(); await load() } catch (e) { toast.error(e.message) } finally { setBusy(false) }
+    try { await fn(...args); await load(true) } catch (e) { toast.error(e.message) } finally { setBusy(false) }
   }
 
   if (loading) return <LoadingBlock rows={8} />
@@ -303,7 +315,7 @@ export default function LeadDetailPage({ isAdmin = false }) {
         onSubmit={guard((v) => api.patch(`/api/leads/${lead.id}`, v).then(() => { toast.success('Status updated'); setStatusDialog(false) }))} />
 
       <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Edit Lead</DialogTitle>
+        <DialogCloseTitle title="Edit Lead" onClose={() => setEditDialog(false)} />
         <DialogContent>
           <LeadForm initial={lead} busy={busy} submitLabel="Save Changes" canAssign={isAdmin}
             assignedOptions={assignedUsers} sources={['Website', 'Referral', 'Cold Call', 'Social Media', 'Advertisement', 'Event']}
@@ -311,8 +323,8 @@ export default function LeadDetailPage({ isAdmin = false }) {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={Boolean(activityDialog)} onClose={() => setActivityDialog(null)} maxWidth="sm" fullWidth>
-        <DialogTitle>{activityDialog === 'call' ? 'Record Call' : 'Add Remark'}</DialogTitle>
+      <Dialog open={Boolean(activityDialog)} onClose={() => setActivityDialog(null)} maxWidth="md" fullWidth>
+        <DialogCloseTitle title={activityDialog === 'call' ? 'Record Call' : 'Add Remark'} onClose={() => setActivityDialog(null)} />
         <DialogContent>
           <LeadActivityForm
             title={activityDialog === 'call' ? 'Save Call' : 'Save Remark'}
@@ -323,8 +335,8 @@ export default function LeadDetailPage({ isAdmin = false }) {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={fuDialog} onClose={() => setFuDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Schedule Follow-up</DialogTitle>
+      <Dialog open={fuDialog} onClose={() => setFuDialog(false)} maxWidth="md" fullWidth>
+        <DialogCloseTitle title="Schedule Follow-up" onClose={() => setFuDialog(false)} />
         <DialogContent>
           <FollowUpForm
             leads={[lead]}
@@ -368,13 +380,14 @@ export default function LeadDetailPage({ isAdmin = false }) {
 }
 
 function CompleteFollowUpDialog({ followUp, busy, onClose, save, onDone }) {
+  const toast = useToast()
   const [outcome, setOutcome] = useState('')
   const [scheduleNext, setScheduleNext] = useState(false)
   const [nextAt, setNextAt] = useState(toLocalInput(followUp.due_at))
   const [nextType, setNextType] = useState(followUp.follow_up_type)
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Complete Follow-up</DialogTitle>
+      <DialogCloseTitle title="Complete Follow-up" onClose={onClose} />
       <DialogContent>
         <Typography variant="body2" sx={{ mb: 2 }}>{followUp.title}</Typography>
         <TextField label="Outcome / Notes" fullWidth size="small" multiline minRows={2} value={outcome}
@@ -406,7 +419,7 @@ function CompleteFollowUpDialog({ followUp, busy, onClose, save, onDone }) {
               next_follow_up_type: scheduleNext ? nextType : undefined
             })
             await onDone()
-          } catch (e) { alert(e.message) }
+          } catch (e) { toast.error(e.message) }
         }}>Mark Completed</Button>
       </DialogActions>
     </Dialog>
@@ -414,10 +427,11 @@ function CompleteFollowUpDialog({ followUp, busy, onClose, save, onDone }) {
 }
 
 function RescheduleDialog({ followUp, busy, onClose, onDone }) {
+  const toast = useToast()
   const [dueAt, setDueAt] = useState(toLocalInput(followUp.due_at))
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Reschedule Follow-up</DialogTitle>
+      <DialogCloseTitle title="Reschedule Follow-up" onClose={onClose} />
       <DialogContent>
         <Typography variant="body2" sx={{ mb: 2 }}>{followUp.title}</Typography>
         <TextField label="New due date & time" type="datetime-local" size="small" fullWidth value={dueAt}
@@ -429,7 +443,7 @@ function RescheduleDialog({ followUp, busy, onClose, onDone }) {
           try {
             await api.patch(`/api/follow-ups/${followUp.id}`, { due_at: new Date(dueAt).toISOString() })
             await onDone()
-          } catch (e) { alert(e.message) }
+          } catch (e) { toast.error(e.message) }
         }}>Save</Button>
       </DialogActions>
     </Dialog>

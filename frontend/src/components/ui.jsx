@@ -70,7 +70,7 @@ export function PageHeader({ title, subtitle, actions }) {
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
       <Box>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>{title}</Typography>
-        {subtitle && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{subtitle}</Typography>}
+        {subtitle && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }} component="div">{subtitle}</Typography>}
       </Box>
       {actions && <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>{actions}</Box>}
     </Box>

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const STATUSES = ['new', 'contacted', 'qualified', 'follow_up', 'proposal_sent', 'won', 'lost', 'on_hold']
+export const STATUSES = ['new', 'contacted', 'qualified', 'follow_up', 'proposal_sent', 'pending_doc', 'won', 'lost', 'on_hold']
 export const PRIORITIES = ['high', 'medium', 'low']
 export const ACTIVITY_TYPES = ['call', 'email', 'meeting', 'whatsapp', 'note', 'status_change', 'other']
 export const FOLLOW_UP_TYPES = ['call', 'email', 'meeting', 'whatsapp', 'other']

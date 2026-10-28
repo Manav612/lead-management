@@ -1,0 +1,20 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch()
+const page = await (await browser.newContext({ viewport: { width: 1500, height: 950 } })).newPage()
+const errors = []
+page.on('pageerror', (e) => errors.push('PAGEERROR: ' + e.message + '\n' + (e.stack || '').split('\n').slice(0, 6).join('\n')))
+page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().slice(0, 300)) })
+await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle' })
+await page.fill('input[type="email"]', 'admin@leadflow.local')
+await page.fill('input[type="password"]', 'Admin@123')
+await page.click('button[type="submit"]')
+await page.waitForURL('**/admin/dashboard')
+await page.goto('http://localhost:5173/admin/leads/new', { waitUntil: 'networkidle' })
+await page.waitForTimeout(2500)
+console.log('URL:', page.url())
+const bodyLen = (await page.textContent('body'))?.trim().length
+console.log('BODY TEXT LENGTH:', bodyLen)
+console.log('BODY SNIPPET:', (await page.textContent('body'))?.trim().slice(0, 300))
+await page.screenshot({ path: 'scripts/ui-shots/debug-leads-new.png' })
+console.log('ERRORS:', errors.length ? errors : 'none')
+await browser.close()

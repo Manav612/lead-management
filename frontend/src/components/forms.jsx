@@ -12,6 +12,8 @@ import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
+import IconButton from '@mui/material/IconButton'
+import CloseIcon from '@mui/icons-material/Close'
 import { toLocalInput } from '../utils/dates'
 import { STATUS_OPTIONS, PRIORITY_OPTIONS } from '../theme'
 
@@ -30,7 +32,7 @@ export const leadFormSchema = z.object({
   interested_product_or_service: z.string().trim().optional(),
   estimated_deal_value: valueSchema.optional(),
   priority: z.enum(['high', 'medium', 'low']),
-  status: z.enum(['new', 'contacted', 'qualified', 'follow_up', 'proposal_sent', 'won', 'lost', 'on_hold']),
+  status: z.enum(['new', 'contacted', 'qualified', 'follow_up', 'proposal_sent', 'pending_doc', 'won', 'lost', 'on_hold']),
   assigned_to: z.string().optional(),
   general_remarks: z.string().trim().optional()
 })
@@ -40,7 +42,7 @@ export const leadFormSchema = z.object({
  * props: initial (lead or {}), onSubmit(data), canAssign, assignedOptions [{id, full_name}],
  *        sources [string], busy, submitLabel
  */
-export function LeadForm({ initial, onSubmit, canAssign = false, assignedOptions = [], sources = [], busy, submitLabel = 'Save' }) {
+export function LeadForm({ initial = {}, onSubmit, canAssign = false, assignedOptions = [], sources = [], busy, submitLabel = 'Save' }) {
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(leadFormSchema),
     defaultValues: {
@@ -81,7 +83,7 @@ export function LeadForm({ initial, onSubmit, canAssign = false, assignedOptions
           <TextField label="City" fullWidth size="small" {...register('city')} />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <TextField select label="Lead Source" size="small" {...register('lead_source')}>
+          <TextField select label="Lead Source" fullWidth size="small" {...register('lead_source')}>
             {sources.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
           </TextField>
         </Grid>
@@ -93,18 +95,18 @@ export function LeadForm({ initial, onSubmit, canAssign = false, assignedOptions
             error={Boolean(errors.estimated_deal_value)} helperText={errors.estimated_deal_value?.message} />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <TextField select label="Priority" size="small" {...register('priority')}>
+          <TextField select label="Priority" fullWidth size="small" {...register('priority')}>
             {PRIORITY_OPTIONS.map((o) => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
           </TextField>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <TextField select label="Status" size="small" {...register('status')}>
+          <TextField select label="Status" fullWidth size="small" {...register('status')}>
             {STATUS_OPTIONS.map((o) => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
           </TextField>
         </Grid>
         {canAssign && (
           <Grid item xs={12} sm={4}>
-            <TextField select label="Assigned To" size="small" {...register('assigned_to')}>
+            <TextField select label="Assigned To" fullWidth size="small" {...register('assigned_to')}>
               <MenuItem value="">Unassigned</MenuItem>
               {assignedOptions.map((u) => <MenuItem key={u.id} value={u.id}>{u.full_name}</MenuItem>)}
             </TextField>
@@ -142,7 +144,14 @@ const FOLLOW_UP_TYPES = [
  * Reusable follow-up create/edit form.
  * props: initial, leads [{id, name, lead_code}], assignedOptions, canAssign, onSubmit, busy
  */
-export function FollowUpForm({ initial, leads, assignedOptions = [], canAssign = false, onSubmit, busy }) {
+// Sensible default for a new follow-up: tomorrow at 10:00 (display zone).
+const defaultDueAt = () => {
+  const dt = new Date(Date.now() + 86400000)
+  dt.setHours(10, 0, 0, 0)
+  return dt.toISOString()
+}
+
+export function FollowUpForm({ initial = {}, leads, assignedOptions = [], canAssign = false, onSubmit, busy }) {
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(followUpSchema),
     defaultValues: {
@@ -150,7 +159,7 @@ export function FollowUpForm({ initial, leads, assignedOptions = [], canAssign =
       title: initial.title || '',
       description: initial.description || '',
       follow_up_type: initial.follow_up_type || 'call',
-      due_at: initial.due_at ? toLocalInput(initial.due_at) : '',
+      due_at: initial.due_at ? toLocalInput(initial.due_at) : toLocalInput(defaultDueAt()),
       reminder_at: initial.reminder_at ? toLocalInput(initial.reminder_at) : '',
       assigned_to: initial.assigned_to || ''
     }
@@ -170,20 +179,21 @@ export function FollowUpForm({ initial, leads, assignedOptions = [], canAssign =
             {...register('title')} error={Boolean(errors.title)} helperText={errors.title?.message} />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <TextField select label="Type" size="small" {...register('follow_up_type')}>
+          <TextField select label="Type" size="small" fullWidth {...register('follow_up_type')}>
             {FOLLOW_UP_TYPES.map((t) => <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>)}
           </TextField>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={8}>
           <TextField label="Due Date & Time *" required type="datetime-local" fullWidth size="small"
             {...register('due_at')} error={Boolean(errors.due_at)} helperText={errors.due_at?.message} />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField label="Reminder (optional)" type="datetime-local" fullWidth size="small" {...register('reminder_at')} />
+        <Grid item xs={12} sm={canAssign ? 8 : 12}>
+          <TextField label="Reminder (optional)" type="datetime-local" fullWidth size="small"
+            inputProps={{ required: true }} {...register('reminder_at')} />
         </Grid>
         {canAssign && (
           <Grid item xs={12} sm={4}>
-            <TextField select label="Responsible Employee" size="small" {...register('assigned_to')}>
+            <TextField select label="Responsible Employee" size="small" fullWidth {...register('assigned_to')}>
               <MenuItem value="">Same as lead assignee</MenuItem>
               {assignedOptions.map((u) => <MenuItem key={u.id} value={u.id}>{u.full_name}</MenuItem>)}
             </TextField>
@@ -231,21 +241,21 @@ export function LeadActivityForm({ initial, onSubmit, busy, title = 'Add Activit
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={4}>
-          <TextField select label="Activity Type" size="small" {...register('activity_type')}>
+        <Grid item xs={12} sm={5}>
+          <TextField select label="Activity Type" size="small" fullWidth {...register('activity_type')}>
             {['call', 'email', 'meeting', 'whatsapp', 'note', 'other'].map((t) => (
               <MenuItem key={t} value={t}>{t[0].toUpperCase() + t.slice(1)}</MenuItem>
             ))}
           </TextField>
         </Grid>
-        <Grid item xs={12} sm={8}>
+        <Grid item xs={12} sm={7}>
           <TextField label="Subject *" required fullWidth size="small" {...register('subject')}
             error={Boolean(errors.subject)} helperText={errors.subject?.message} />
         </Grid>
-        <Grid item xs={12} sm={8}>
-          <TextField label="Remarks" fullWidth size="small" multiline minRows={2} {...register('remarks')} />
+        <Grid item xs={12}>
+          <TextField label="Remarks" fullWidth size="small" multiline minRows={3} {...register('remarks')} />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={7}>
           <TextField label="Outcome (e.g. interested, busy, lost)" fullWidth size="small" {...register('outcome')} />
         </Grid>
         <Grid item xs={12}>
@@ -268,7 +278,12 @@ export function StatusChangeDialog({ open, lead, busy, onSubmit, onClose }) {
   const isLost = status === 'lost'
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Change Status {lead?.lead_code ? `(${lead.lead_code})` : ''}</DialogTitle>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+        <span>Change Status {lead?.lead_code ? `(${lead.lead_code})` : ''}</span>
+        <IconButton size="small" aria-label="Close" onClick={onClose} sx={{ color: 'text.secondary' }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         <TextField select label="New Status" value={status} onChange={(e) => setStatus(e.target.value)}
           fullWidth size="small" sx={{ mt: 1, mb: isLost ? 2 : 0 }}>
