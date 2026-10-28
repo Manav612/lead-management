@@ -14,12 +14,12 @@ import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import { api } from '../services/api'
 import { DISPLAY_TZ } from '../config'
+import { d as dz } from '../utils/dates'
 import { useToast } from '../context/ToastContext'
 import { PageHeader, LoadingBlock, ErrorBlock, EmptyState } from '../components/ui'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-const dz = (v) => (v ? dayjs.tz(v, DISPLAY_TZ) : null)
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
