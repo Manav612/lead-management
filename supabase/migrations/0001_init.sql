@@ -12,6 +12,20 @@ begin
   return new;
 end $$;
 
+-- ---------- profiles (created first: is_admin() below is a SQL-language
+-- function, and Postgres validates its body at CREATE time) ----------
+create table if not exists public.profiles (
+  id          uuid primary key references auth.users(id) on delete cascade,
+  full_name   text not null default '',
+  email       text not null,
+  role        text not null default 'user' check (role in ('admin','user')),
+  is_active   boolean not null default true,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create unique index if not exists profiles_email_idx on public.profiles (lower(email));
+create index if not exists profiles_role_idx on public.profiles (role);
+
 create or replace function public.is_admin()
 returns boolean language sql security definer stable as $$
   select coalesce((select role from public.profiles where id = auth.uid()), 'user') = 'admin';
@@ -30,18 +44,7 @@ begin
   return 'LD-' || y || '-' || lpad(n::text, 6, '0');
 end $$;
 
--- ---------- profiles ----------
-create table if not exists public.profiles (
-  id          uuid primary key references auth.users(id) on delete cascade,
-  full_name   text not null default '',
-  email       text not null,
-  role        text not null default 'user' check (role in ('admin','user')),
-  is_active   boolean not null default true,
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
-);
-create unique index if not exists profiles_email_idx on public.profiles (lower(email));
-create index if not exists profiles_role_idx on public.profiles (role);
+-- (public.profiles is created above, before is_admin())
 
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer as $$
