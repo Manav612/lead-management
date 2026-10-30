@@ -13,7 +13,10 @@ export function createSupabaseStore(supabaseUrl, serviceRoleKey) {
 
   const pageRange = (page, pageSize) => [(page - 1) * pageSize, page * pageSize - 1]
 
-  const leadEmbed = '*, assigned_to:profiles!assigned_to(full_name), created_by:profiles!created_by(full_name)'
+  // Note: the named embeds (assigned_to / created_by) override the raw UUID
+  // columns of the same name, so `id` must be selected in the embed for
+  // ownership checks to work.
+  const leadEmbed = '*, assigned_to:profiles!assigned_to(id, full_name), created_by:profiles!created_by(id, full_name)'
   const stripNames = (row) => {
     const out = { ...row }
     out.assigned_to_name = row.assigned_to?.full_name ?? null
@@ -107,8 +110,12 @@ export function createSupabaseStore(supabaseUrl, serviceRoleKey) {
       const { data, error } = await q
       if (error) throw error
       if (!data) return null
-      if (scopeUserId && data.assigned_to?.id !== scopeUserId && data.assigned_to !== scopeUserId) return null
-      return stripNames({ ...data, assigned_to: data.assigned_to?.id ?? null })
+      if (scopeUserId && data.assigned_to?.id !== scopeUserId) return null
+      // stripNames gives assigned_to_name (display) but removes assigned_to;
+      // the detail views + ownership checks need the UUID, so attach it back.
+      const row = stripNames(data)
+      row.assigned_to = data.assigned_to?.id ?? null
+      return row
     },
     async createLead(data, userId) {
       const { data: codeRow, error: codeErr } = await sb.rpc('next_lead_code')
