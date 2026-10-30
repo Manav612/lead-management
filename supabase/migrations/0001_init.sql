@@ -363,11 +363,15 @@ returns jsonb language sql stable as $$
     where (p_user_id is null or f.assigned_to = p_user_id)
   ),
   emp as (
-    select coalesce(p.full_name, 'Unassigned') as name, count(*) as lead_count
-    from base l left join public.profiles p on p.id = l.assigned_to
-    group by p.full_name
-    order by count(*) desc, p.full_name
-    limit 10
+    select jsonb_agg(jsonb_build_object('name', name, 'lead_count', lead_count)
+                     order by lead_count desc, name) as rows
+    from (
+      select coalesce(p.full_name, 'Unassigned') as name, count(*) as lead_count
+      from base l left join public.profiles p on p.id = l.assigned_to
+      group by p.full_name
+      order by count(*) desc, p.full_name
+      limit 10
+    ) e
   ),
   by_status as (
     select jsonb_agg(jsonb_build_object('status', status, 'count', cnt) order by cnt desc) as rows
@@ -380,23 +384,27 @@ returns jsonb language sql stable as $$
   recent_act as (
     select jsonb_agg(
       jsonb_build_object(
-        'id', a.id, 'lead_id', a.lead_id, 'user_id', a.user_id,
-        'activity_type', a.activity_type, 'subject', a.subject,
-        'remarks', a.remarks, 'outcome', a.outcome, 'created_at', a.created_at,
-        'user_name', p.full_name, 'lead_name', l.name
-      ) order by a.created_at desc
+        'id', t.id, 'lead_id', t.lead_id, 'user_id', t.user_id,
+        'activity_type', t.activity_type, 'subject', t.subject,
+        'remarks', t.remarks, 'outcome', t.outcome, 'created_at', t.created_at,
+        'user_name', t.user_name, 'lead_name', t.lead_name
+      ) order by t.created_at desc
     ) as rows
-    from public.activities a
-    join public.leads l on l.id = a.lead_id
-    left join public.profiles p on p.id = a.user_id
-    where (p_user_id is null or l.assigned_to = p_user_id)
-    order by a.created_at desc
-    limit 5
+    from (
+      select a.id, a.lead_id, a.user_id, a.activity_type, a.subject,
+             a.remarks, a.outcome, a.created_at,
+             p.full_name as user_name, l.name as lead_name
+      from public.activities a
+      join public.leads l on l.id = a.lead_id
+      left join public.profiles p on p.id = a.user_id
+      where (p_user_id is null or l.assigned_to = p_user_id)
+      order by a.created_at desc
+      limit 5
+    ) t
   ),
   recent_imp as (
     select jsonb_agg(row_to_json(b) order by b.created_at desc) as rows
-    from public.import_batches b
-    limit 3
+    from (select * from public.import_batches order by created_at desc limit 3) b
   )
   select jsonb_build_object(
     'total_leads', a.total_leads,
