@@ -1,4 +1,11 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
+
+// Always load the repo-root .env, no matter which directory the API is
+// started from (`npm --prefix api run dev` runs with cwd = api/).
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') })
 
 const bool = (v, d = false) => (v === undefined ? d : String(v).toLowerCase() === 'true')
 

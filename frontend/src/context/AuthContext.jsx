@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [mode, setMode] = useState(null)
   const navigate = useNavigate()
-  const meInFlight = useRef(false)
+  const meInFlight = useRef(null)
 
   const clearSession = useCallback(() => {
     setToken(null)
@@ -19,21 +19,27 @@ export function AuthProvider({ children }) {
   }, [])
 
   const fetchMe = useCallback(async () => {
-    if (meInFlight.current) return null
-    meInFlight.current = true
-    try {
-      const data = await api.get('/api/me')
-      setUser(data.user)
-      setStatus('authed')
-      return data.user
-    } catch {
-      setToken(null)
-      setUser(null)
-      setStatus('guest')
-      return null
-    } finally {
-      meInFlight.current = false
-    }
+    // Share the in-flight request: in supabase mode, onAuthStateChange and
+    // login() both call fetchMe back-to-back; the guard must await the same
+    // promise, not bail out with null (that produced a false "could not load
+    // your profile" error right after a successful sign-in).
+    if (meInFlight.current) return meInFlight.current
+    meInFlight.current = (async () => {
+      try {
+        const data = await api.get('/api/me')
+        setUser(data.user)
+        setStatus('authed')
+        return data.user
+      } catch {
+        setToken(null)
+        setUser(null)
+        setStatus('guest')
+        return null
+      } finally {
+        meInFlight.current = null
+      }
+    })()
+    return meInFlight.current
   }, [])
 
   useEffect(() => {

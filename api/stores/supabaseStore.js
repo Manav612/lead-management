@@ -52,8 +52,10 @@ export function createSupabaseStore(supabaseUrl, serviceRoleKey) {
       return data
     },
     async createProfile({ id, full_name, email, role, is_active = true }) {
+      // Upsert: the on_auth_user_created trigger may have already written the
+      // profile row when the auth account was created.
       const { data, error } = await sb.from('profiles')
-        .insert({ id, full_name, email, role, is_active })
+        .upsert({ id, full_name, email, role, is_active }, { onConflict: 'id' })
         .select().single()
       if (error) throw error
       return data
