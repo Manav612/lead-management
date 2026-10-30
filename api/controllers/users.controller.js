@@ -15,8 +15,12 @@ export function buildUsersController(ctx) {
     if (existing) throw new ApiError(409, 'A user with this email already exists')
 
     if (mode === 'supabase') {
-      // Create the Supabase Auth account first (trusted, server-side), then the profile.
-      const { data: authUser, error } = await supabase.auth.admin.createUser({
+      // Create the Supabase Auth account first (trusted, server-side); the
+      // on_auth_user_created trigger writes the initial profile row.
+      // Response shape: { data: { user: {...} }, error } — the user object is
+      // nested under data.user (reading data.id here was undefined → null-id
+      // insert → 23502).
+      const { data: { user: authUser }, error } = await supabase.auth.admin.createUser({
         email: data.email,
         password: data.password,
         email_confirm: true,
