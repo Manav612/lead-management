@@ -4,12 +4,11 @@
   "buildCommand": "npm --prefix frontend run build",
   "outputDirectory": "frontend/dist",
   "functions": {
-    "api/vercel/[...api].js": {
+    "api/[...api].mjs": {
       "maxDuration": 60
     }
   },
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/vercel/[...api]" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

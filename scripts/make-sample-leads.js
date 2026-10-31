@@ -1,7 +1,7 @@
 /**
  * Generates sample-leads.xlsx + sample-leads.csv in the project root.
  * Usage: node scripts/make-sample-leads.js
- * (uses the xlsx package installed in api/node_modules)
+ * (uses the xlsx package installed in server/node_modules)
  */
 import { createRequire } from 'module'
 import path from 'path'
@@ -9,7 +9,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const require = createRequire(path.join(__dirname, '..', 'api', 'index.js'))
+const require = createRequire(path.join(__dirname, '..', 'server', 'index.js'))
 const XLSX = require('xlsx')
 
 const HEADERS = [

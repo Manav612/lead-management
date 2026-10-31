@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
 // Always load the repo-root .env, no matter which directory the API is
-// started from (`npm --prefix api run dev` runs with cwd = api/).
+// started from (`npm --prefix server run dev` runs with cwd = server/).
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') })
 
