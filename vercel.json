@@ -1,14 +1,15 @@
-{
+﻿{
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npm run install:all",
   "buildCommand": "npm --prefix frontend run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/[...api].mjs": {
-      "maxDuration": 60
+      "maxDuration": 55
     }
   },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
+
