@@ -17,24 +17,25 @@ Both panels share the same database, authentication, backend API, and design sys
 | Routing | React Router 6 |
 | Backend | Node.js + Express 4 (REST API) |
 | Database | Supabase PostgreSQL (+ Auth, Row Level Security) |
-| Validation | Zod (shared rules in `api/lib/validators.js`) |
+| Validation | Zod (shared rules in `server/lib/validators.js`) |
 | Deploy | Vercel (static frontend + Express as a Function) |
 
 ## Folder structure
 
 ```
 Lead_MS/
-├── api/                    # Express REST API (also runs as a Vercel Function)
+├── api/                    # the single Vercel serverless function (MUST stay 1 file — Hobby plan caps at 12)
+│   └── [...api].mjs        # catch-all: serves every /api/* request to server/
+├── server/                 # Express REST API (same code in local dev and on Vercel)
 │   ├── app.js              # createApp() — shared by local server and Vercel
 │   ├── index.js            # local dev server (node --watch index.js)
-│   ├── vercel/[...api].js  # Vercel Function wrapper (no listen())
 │   ├── config.js           # env config, mode detection
 │   ├── lib/                # utils (errors), tokens, Zod schemas
 │   ├── stores/             # data layer: localStore (dev) + supabaseStore (prod)
 │   ├── services/           # business logic: leads, follow-ups, imports
 │   ├── controllers/        # HTTP handlers
 │   ├── middleware/auth.js  # Supabase JWT or local-demo token
-│   ├── routes/index.js     # all route registration
+│   ├── routes/index.js     # all route registration (all endpoints use the /api prefix)
 │   └── __tests__/          # vitest + supertest API tests
 ├── frontend/               # React app (Vite)
 │   ├── src/context/        # AuthContext, ToastContext
@@ -146,7 +147,7 @@ In the app: **Admin → Users → Add User**. The script creates the Supabase au
 
 ```bash
 # API tests (vitest + supertest, local demo mode)
-npm --prefix api test
+npm --prefix server test
 
 # Frontend unit tests (vitest)
 npm --prefix frontend test
@@ -178,7 +179,7 @@ npm --prefix frontend run build    # outputs frontend/dist
    | `APP_SECRET` | same long random string as `.env` |
    | `CORS_ORIGINS` | `https://your-app.vercel.app` |
 
-   (If you deploy the frontend on the same Vercel project, the rewrite in `vercel.json` routes `/api/*` to the Express function `api/vercel/[...api].js`, so no `VITE_API_BASE_URL` is needed.)
+   (The frontend on the same Vercel project calls `/api/*` same-origin; Vercel routes those requests to the single Express function `api/[...api].mjs` — the full `/api`-prefixed path arrives in `req.url` untouched, so no rewrite and no `VITE_API_BASE_URL` are needed.)
 
 5. Deploy. Then run `node scripts/create-first-admin.js …` once (or create users through the app if you already have an admin from a previous deploy).
 

@@ -18,6 +18,7 @@
     "@mui/material": "^5.16.7",
     "@supabase/supabase-js": "^2.45.4",
     "dayjs": "^1.11.13",
+    "leadflow-crm": "file:..",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
