@@ -1,4 +1,7 @@
 import express from 'express'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import helmet from 'helmet'
 import cors from 'cors'
 import { createClient } from '@supabase/supabase-js'
@@ -39,6 +42,20 @@ export function createApp() {
   app.use(express.json({ limit: '2mb' }))
 
   registerRoutes(app, ctx)
+
+  // Serve the built frontend from this same server when it is bundled with
+  // the server (standalone hosts like Render). No-op on Vercel, where the
+  // static files live outside the function and this directory does not exist.
+  const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../frontend/dist')
+  if (fs.existsSync(distDir)) {
+    app.use(express.static(distDir))
+    app.use((req, res, next) => {
+      if (req.method === 'GET' && !req.path.startsWith('/api/')) {
+        return res.sendFile(path.join(distDir, 'index.html'))
+      }
+      next()
+    })
+  }
 
   app.use(notFound)
   app.use((err, req, res, next) => sendError(err, res)) // eslint-disable-line no-unused-vars
