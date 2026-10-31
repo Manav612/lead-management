@@ -9,7 +9,11 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env') })
 
 const bool = (v, d = false) => (v === undefined ? d : String(v).toLowerCase() === 'true')
 
-export const config = {
+// NOTE: the export name must not be `config`. Vercel's function builder runs
+// @vercel/static-config on every entrypoint; a file exporting
+// `export const config = {...}` with a non-literal value (e.g. `process.env.X || 'y'`)
+// fails the build with `Unhandled type: "LogicalExpression"`.
+export const appConfig = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '3001', 10),
   appBaseUrl: (process.env.APP_BASE_URL || 'http://localhost:5173').replace(/\/$/, ''),
@@ -26,6 +30,6 @@ export const config = {
 }
 
 export const isSupabaseConfigured = () =>
-  Boolean(config.supabaseUrl && config.supabaseServiceRoleKey)
+  Boolean(appConfig.supabaseUrl && appConfig.supabaseServiceRoleKey)
 
 export const mode = isSupabaseConfigured() ? 'supabase' : 'local-dev'

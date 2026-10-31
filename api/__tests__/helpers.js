@@ -1,7 +1,7 @@
 import { createApp } from '../app.js'
 import { resetStoreForTests, getStore } from '../stores/index.js'
 import { signLocalToken } from '../lib/localToken.js'
-import { config } from '../config.js'
+import { appConfig as config } from '../config.js'
 
 export function newApp() {
   resetStoreForTests()
