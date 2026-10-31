@@ -37,7 +37,11 @@ export function createApp() {
   }
 
   app.disable('x-powered-by')
-  app.use(helmet())
+  // Helmet applies to API responses only. When this server also serves the
+  // built frontend (Render), a global helmet CSP (default-src 'self') would
+  // block the browser's direct calls to Supabase Auth. On Vercel the HTML
+  // never passes through Express, so this scope matches production behavior.
+  app.use('/api', helmet())
   app.use(cors({ origin: config.corsOrigins }))
   app.use(express.json({ limit: '2mb' }))
 
