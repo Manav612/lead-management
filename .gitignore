@@ -25,7 +25,9 @@ coverage/
 
 # Test/build artifacts (local verification only)
 .tmp-build/
+.tmp-builder/
 .tmp-esbuild/
+.npm-cache/
 frontend/scripts/ui-shots/
 tmp-template.xlsx
 

@@ -1,6 +1,6 @@
 import { createLocalStore, seedLocalStore } from './localStore.js'
 import { createSupabaseStore } from './supabaseStore.js'
-import { config, isSupabaseConfigured } from '../config.js'
+import { appConfig as config, isSupabaseConfigured } from '../config.js'
 
 let cached = null
 

@@ -20,7 +20,8 @@ import { STATUS_OPTIONS, PRIORITY_OPTIONS } from '../theme'
 const phoneSchema = z.string().trim().min(1, 'Phone is required')
   .refine((v) => /^\+?\d{10,15}$/.test(v.replace(/[()\s-]/g, '')), 'Enter a valid phone number (10-15 digits)')
 const emailSchema = z.string().trim().email('Enter a valid email').or(z.literal(''))
-const valueSchema = z.union([z.number().nonnegative('Must be a positive number'), z.literal('')])
+const valueSchema = z.union([z.number().nonnegative('Must be a positive number'),
+  z.string().refine((v) => v === '' || (Number.isFinite(Number(v)) && Number(v) >= 0), 'Enter a valid amount (0 or more)')])
 
 export const leadFormSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -91,7 +92,8 @@ export function LeadForm({ initial = {}, onSubmit, canAssign = false, assignedOp
           <TextField label="Interested Product/Service" fullWidth size="small" {...register('interested_product_or_service')} />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <TextField label="Estimated Deal Value (₹)" type="number" fullWidth size="small" {...register('estimated_deal_value')}
+          <TextField label="Estimated Deal Value (₹)" type="number" fullWidth size="small" inputProps={{ min: 0 }}
+            {...register('estimated_deal_value')}
             error={Boolean(errors.estimated_deal_value)} helperText={errors.estimated_deal_value?.message} />
         </Grid>
         <Grid item xs={12} sm={4}>
